@@ -17,6 +17,7 @@ const ALL_SKILLS = [
   "はっこう", "ペイント", "くいしんぼ", "パーティー", "DJ", "しょくにん", "へんしん",
 ];
 const allEnvironments = [...new Set(pokedex.flatMap((p) => p.environment))].sort();
+const allFavorites = [...new Set(pokedex.flatMap((p) => p.favorites))].sort();
 
 function FilterChip({
   label,
@@ -49,6 +50,7 @@ export default function App() {
   const [weatherFilter, setWeatherFilter] = useState<string[]>([]);
   const [skillFilter, setSkillFilter] = useState<string[]>([]);
   const [envFilter, setEnvFilter] = useState<string[]>([]);
+  const [favFilter, setFavFilter] = useState<string[]>([]);
 
   function toggle(arr: string[], val: string): string[] {
     return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
@@ -56,7 +58,7 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [timeFilter, weatherFilter, skillFilter, envFilter, query]);
+  }, [timeFilter, weatherFilter, skillFilter, envFilter, favFilter, query]);
 
   const filtered = useMemo(() => {
     return pokedex.filter((p) => {
@@ -70,11 +72,12 @@ export default function App() {
       if (weatherFilter.length > 0 && !p.weather.some((w) => weatherFilter.includes(w))) return false;
       if (skillFilter.length > 0 && !p.skills.some((s) => skillFilter.includes(s))) return false;
       if (envFilter.length > 0 && !p.environment.some((e) => envFilter.includes(e))) return false;
+      if (favFilter.length > 0 && !p.favorites.some((f) => favFilter.includes(f))) return false;
       return true;
     }).sort((a, b) => a.no - b.no);
-  }, [query, timeFilter, weatherFilter, skillFilter, envFilter]);
+  }, [query, timeFilter, weatherFilter, skillFilter, envFilter, favFilter]);
 
-  const hasFilter = query || timeFilter.length > 0 || weatherFilter.length > 0 || skillFilter.length > 0 || envFilter.length > 0;
+  const hasFilter = query || timeFilter.length > 0 || weatherFilter.length > 0 || skillFilter.length > 0 || envFilter.length > 0 || favFilter.length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,6 +145,18 @@ export default function App() {
               />
             ))}
           </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-gray-500 w-10">属性</span>
+            {allFavorites.map((f) => (
+              <FilterChip
+                key={f}
+                label={f}
+                active={favFilter.includes(f)}
+                onClick={() => setFavFilter((prev) => toggle(prev, f))}
+                color="bg-violet-500 border-violet-500"
+              />
+            ))}
+          </div>
         </div>
 
         {/* 件数 & リセット */}
@@ -149,7 +164,7 @@ export default function App() {
           <span>{filtered.length} / {pokedex.length} 件</span>
           {hasFilter && (
             <button
-              onClick={() => { setQuery(""); setTimeFilter([]); setWeatherFilter([]); setSkillFilter([]); setEnvFilter([]); }}
+              onClick={() => { setQuery(""); setTimeFilter([]); setWeatherFilter([]); setSkillFilter([]); setEnvFilter([]); setFavFilter([]); }}
               className="text-red-500 hover:underline"
             >
               フィルターをリセット
